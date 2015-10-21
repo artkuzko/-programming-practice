@@ -13,15 +13,18 @@ window.onload = function() {
     var saveLapsBtn = document.getElementById('saveLap');
     var resetBtn = document.getElementById('reset');
     var saveSessionBtn = document.getElementById('saveSession');
-    var sessionId;
-    var savedLaps = localStorage.getItem(sessionId);
-    //var sessionsArray = (localStorage.length !== 0) ? localStorage.key(sessionId) : [];
-    var sessionsArray = [];
+    var loadSessionBtn = document.getElementById('loadSession');
+    var sessionList = document.createElement('ul');//-- created UL tag for displaying the running sessions within it
+    var lapsDisplaylist;
+    var sessionId, showSession = false;
+    var savedLaps = localStorage.getItem('sessions');
+    var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedLaps) : [];
     var lapsArray = [];
-    var ms = 0, min = 0, sec = 0, hours = 0, isTimerRunning = false, showSession = false;
+    var ms = 0, min = 0, sec = 0, hours = 0, isTimerRunning = false;
     var endResult = '00:00:00:00';
     var startingPoint;
     timer.textContent = endResult;
+    sessionsView.style.display = 'none';
 
     function toggleTimerRunning() {
         if(!isTimerRunning) {
@@ -101,16 +104,20 @@ window.onload = function() {
         lapView.appendChild(lapsList);
     }
 
-    function showSessions(sessionContent, sessionId) {
-        var sessionList = document.createElement('ul');
-        var sessionBlock;
-        sessionList.innerHTML = '<li class="" data-sesssion-lap="' + sessionId + '"><a href="#">' + 'show session-' + sessionId+ '</a><ul class="sessionBlock" id="sessionBlock-' + sessionId+ '"></ul></li>';
-        sessionsView.appendChild(sessionList);
-        sessionBlock = document.getElementById('sessionBlock-' + sessionId);
-        for(var mx = 0; mx < sessionContent.length; mx++) {
-            var lapsList = document.createElement('li');
-            lapsList.innerHTML = '<div class="list-lap" data-lap-num="' + mx + '"><span>'+ 'lap #: ' + mx + '</span>' + ' ' + sessionContent[mx] + '</div>';
-            sessionBlock.appendChild(lapsList);
+
+    function universalSessionsShowcase (sessionArray) {
+        for(var sessionId = 0; sessionId < sessionArray.length; sessionId++) {
+            var runningSessionListItem = document.createElement('li');
+            runningSessionListItem.innerHTML = '<a href="#">' + 'show session-' + (sessionId + 1) +'</a><ul class="sessionBlock" id="sessionBlock-' + sessionId+ '"></ul>';
+            sessionList.appendChild(runningSessionListItem);
+            sessionsView.appendChild(sessionList);
+
+            for(var lapsId = 0; lapsId < sessionArray[sessionId].length; lapsId++) {
+                lapsDisplaylist = document.getElementById('sessionBlock-'+ sessionId);
+                var runningLapListItem = document.createElement('li');
+                runningLapListItem.innerHTML = '<span><strong>'+ 'lap # : ' + (lapsId + 1) + '</strong>' + sessionArray[sessionId][lapsId] + '</span>';
+                lapsDisplaylist.appendChild(runningLapListItem);
+            }
         }
     }
 
@@ -128,7 +135,16 @@ window.onload = function() {
     };
 
     saveSessionBtn.onclick = function () {
-        sessionsArray.push(lapsArray);
+        if(lapsArray.length) {
+            sessionsArray.push(lapsArray);
+        }
         localStorage.setItem('sessions', JSON.stringify(sessionsArray));
-    }
+        resetTimer();
+    };
+
+    loadSessionBtn.onclick = function () {
+        sessionsView.style.display = 'block';
+        localStorage.getItem('sessions');
+        universalSessionsShowcase(sessionsArray);
+    };
 };
