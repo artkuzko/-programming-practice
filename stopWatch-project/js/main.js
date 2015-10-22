@@ -16,7 +16,6 @@ window.onload = function() {
     var loadSessionBtn = document.getElementById('loadSession');
     var sessionList = document.createElement('ul');//-- created UL tag for displaying the running sessions within it
     var lapsDisplaylist;
-    var sessionId, showSession = false;
     var savedLaps = localStorage.getItem('sessions');
     var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedLaps) : [];
     var lapsArray = [];
