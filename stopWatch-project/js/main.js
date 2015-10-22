@@ -23,7 +23,7 @@ window.onload = function() {
     var endResult = '00:00:00:00';
     var startingPoint;
     timer.textContent = endResult;
-    sessionsView.style.display = 'none';
+    //sessionsView.style.visibility = 'hidden';
 
     function toggleTimerRunning() {
         if(!isTimerRunning) {
@@ -38,8 +38,8 @@ window.onload = function() {
         }
     }
 
-    for(var listItems = 0; listItems < lapsArray.length; listItems++){
-        updateLapsList(lapsArray[listItems], listItems+1);
+    for(var sessionsQuantity = 0; sessionsQuantity < sessionsArray.length; sessionsQuantity++) {
+        universalSessionsShowcase(sessionsArray);
     }
 
     function startTimer() {
@@ -137,13 +137,13 @@ window.onload = function() {
         if(lapsArray.length) {
             sessionsArray.push(lapsArray);
         }
+        //universalSessionsShowcase(sessionsArray);
         localStorage.setItem('sessions', JSON.stringify(sessionsArray));
         resetTimer();
     };
 
     loadSessionBtn.onclick = function () {
-        sessionsView.style.display = 'block';
-        localStorage.getItem('sessions');
-        universalSessionsShowcase(sessionsArray);
+        //sessionsView.style.visibility = 'visible';
+        //localStorage.getItem('sessions');
     };
 };
