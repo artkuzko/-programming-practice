@@ -23,7 +23,7 @@ window.onload = function() {
     var endResult = '00:00:00:00';
     var startingPoint;
     timer.textContent = endResult;
-    //sessionsView.style.visibility = 'hidden';
+    sessionsView.style.visibility = 'hidden';
 
     function toggleTimerRunning() {
         if(!isTimerRunning) {
@@ -36,10 +36,6 @@ window.onload = function() {
             isTimerRunning = false;
             startBtn.innerText = 'Start';
         }
-    }
-
-    for(var sessionsQuantity = 0; sessionsQuantity < sessionsArray.length; sessionsQuantity++) {
-        universalSessionsShowcase(sessionsArray);
     }
 
     function startTimer() {
@@ -105,18 +101,19 @@ window.onload = function() {
 
 
     function universalSessionsShowcase (sessionArray) {
+        sessionList.innerHTML = '';
         for(var sessionId = 0; sessionId < sessionArray.length; sessionId++) {
             var runningSessionListItem = document.createElement('li');
             runningSessionListItem.innerHTML = '<a href="#">' + 'show session-' + (sessionId + 1) +'</a><ul class="sessionBlock" id="sessionBlock-' + sessionId+ '"></ul>';
             sessionList.appendChild(runningSessionListItem);
             sessionsView.appendChild(sessionList);
 
-            //for(var lapsId = 0; lapsId < sessionArray[sessionId].length; lapsId++) {
-            //    lapsDisplaylist = document.getElementById('sessionBlock-'+ sessionId);
-            //    var runningLapListItem = document.createElement('li');
-            //    runningLapListItem.innerHTML = '<span><strong>'+ 'lap # : ' + (lapsId + 1) + '</strong>' + sessionArray[sessionId][lapsId] + '</span>';
-            //    lapsDisplaylist.appendChild(runningLapListItem);
-            //}
+            for(var lapsId = 0; lapsId < sessionArray[sessionId].length; lapsId++) {
+                lapsDisplaylist = document.getElementById('sessionBlock-'+ sessionId);
+                var runningLapListItem = document.createElement('li');
+                runningLapListItem.innerHTML = '<span><strong>'+ 'lap # : ' + (lapsId + 1) + '</strong>' + sessionArray[sessionId][lapsId] + '</span>';
+                lapsDisplaylist.appendChild(runningLapListItem);
+            }
         }
     }
 
@@ -137,13 +134,13 @@ window.onload = function() {
         if(lapsArray.length) {
             sessionsArray.push(lapsArray);
         }
-        //universalSessionsShowcase(sessionsArray);
         localStorage.setItem('sessions', JSON.stringify(sessionsArray));
         resetTimer();
     };
 
     loadSessionBtn.onclick = function () {
-        //sessionsView.style.visibility = 'visible';
-        //localStorage.getItem('sessions');
+        sessionsView.style.visibility = 'visible';
+        localStorage.getItem('sessions');
+        universalSessionsShowcase(sessionsArray);
     };
 };
