@@ -111,12 +111,12 @@ window.onload = function() {
             sessionList.appendChild(runningSessionListItem);
             sessionsView.appendChild(sessionList);
 
-            for(var lapsId = 0; lapsId < sessionArray[sessionId].length; lapsId++) {
-                lapsDisplaylist = document.getElementById('sessionBlock-'+ sessionId);
-                var runningLapListItem = document.createElement('li');
-                runningLapListItem.innerHTML = '<span><strong>'+ 'lap # : ' + (lapsId + 1) + '</strong>' + sessionArray[sessionId][lapsId] + '</span>';
-                lapsDisplaylist.appendChild(runningLapListItem);
-            }
+            //for(var lapsId = 0; lapsId < sessionArray[sessionId].length; lapsId++) {
+            //    lapsDisplaylist = document.getElementById('sessionBlock-'+ sessionId);
+            //    var runningLapListItem = document.createElement('li');
+            //    runningLapListItem.innerHTML = '<span><strong>'+ 'lap # : ' + (lapsId + 1) + '</strong>' + sessionArray[sessionId][lapsId] + '</span>';
+            //    lapsDisplaylist.appendChild(runningLapListItem);
+            //}
         }
     }
 
