@@ -24,17 +24,36 @@ window.onload = function() {
     var startingPoint;
     timer.textContent = endResult;
     sessionsView.style.visibility = 'hidden';
+    resetBtn.disabled = true;
+    saveLapsBtn.disabled = true;
+    saveSessionBtn.disabled = true;
 
     function toggleTimerRunning() {
         if(!isTimerRunning) {
             startTimer();
             isTimerRunning = true;
             startBtn.innerText = 'Pause';
+            checkButtnsCondition ()
         }
         else {
             clearInterval(startingPoint);
             isTimerRunning = false;
             startBtn.innerText = 'Start';
+            checkButtnsCondition ()
+        }
+    }
+
+    function checkButtnsCondition (){
+        if(isTimerRunning === true && lapsArray.length === 0){
+            resetBtn.disabled = false;
+            saveLapsBtn.disabled = false;
+        } else if (isTimerRunning === false && lapsArray.length > 0){
+            resetBtn.disabled = false;
+            saveLapsBtn.disabled = true;
+        }
+        else {
+            resetBtn.disabled = true;
+            saveLapsBtn.disabled = true;
         }
     }
 
@@ -99,7 +118,6 @@ window.onload = function() {
         lapView.appendChild(lapsList);
     }
 
-
     function universalSessionsShowcase (sessionArray) {
         sessionList.innerHTML = '';
         for(var sessionId = 0; sessionId < sessionArray.length; sessionId++) {
@@ -123,6 +141,7 @@ window.onload = function() {
 
     resetBtn.onclick = function () {
         resetTimer();
+        checkButtnsCondition();
     };
 
     saveLapsBtn.onclick = function () {
