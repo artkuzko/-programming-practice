@@ -10,19 +10,21 @@ window.onload = function() {
     var sessionsView = document.getElementById('sampleSessions');
     var startBtn = document.getElementById('starter');
     var timer = document.getElementById('timer');
+    var toolTip = document.getElementById('tooltip');
     var saveLapsBtn = document.getElementById('saveLap');
     var resetBtn = document.getElementById('reset');
     var saveSessionBtn = document.getElementById('saveSession');
     var loadSessionBtn = document.getElementById('loadSession');
     var sessionList = document.createElement('ul');//-- created UL tag for displaying the running sessions within it
     var lapsDisplaylist;
-    var savedLaps = localStorage.getItem('sessions');
-    var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedLaps) : [];
+    var savedSessions = localStorage.getItem('sessions');
+    var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedSessions) : [];
     var lapsArray = [];
     var ms = 0, min = 0, sec = 0, hours = 0, isTimerRunning = false;
     var endResult = '00:00:00:00';
     var startingPoint;
     timer.textContent = endResult;
+    toolTip.style.display = 'none';
     sessionsView.style.visibility = 'hidden';
     resetBtn.disabled = true;
     saveLapsBtn.disabled = true;
@@ -33,27 +35,45 @@ window.onload = function() {
             startTimer();
             isTimerRunning = true;
             startBtn.innerText = 'Pause';
-            checkButtnsCondition ()
         }
         else {
             clearInterval(startingPoint);
             isTimerRunning = false;
             startBtn.innerText = 'Start';
-            checkButtnsCondition ()
         }
+        checkButtnsCondition()
     }
 
     function checkButtnsCondition (){
+        toolTip.style.display = 'none';
         if(isTimerRunning === true && lapsArray.length === 0){
             resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
-        } else if (isTimerRunning === false && lapsArray.length > 0){
+        }
+        else if(timer.textContent !== endResult && isTimerRunning === false && lapsArray. length === 0) {
             resetBtn.disabled = false;
-            saveLapsBtn.disabled = true;
+            saveLapsBtn.disabled = false;
+        }
+        else if (isTimerRunning === false && lapsArray.length > 0){
+            resetBtn.disabled = false;
+            saveLapsBtn.disabled = false;
+            if(timer.textContent === lapsArray[lapsArray.length -1]) {
+                saveLapsBtn.disabled = true;
+                saveSessionBtn.disabled = false;
+            }
+        }
+        else if(isTimerRunning === false && lapsArray.length > 0) {
+            saveLapsBtn.disabled = false;
+            saveSessionBtn.disabled = false;
+        }
+        else if(isTimerRunning === true && lapsArray.length > 0) {
+            saveLapsBtn.disabled = false;
+            saveSessionBtn.disabled = false;
         }
         else {
             resetBtn.disabled = true;
             saveLapsBtn.disabled = true;
+            saveSessionBtn.disabled = true;
         }
     }
 
@@ -147,6 +167,7 @@ window.onload = function() {
     saveLapsBtn.onclick = function () {
         lapsArray.push(timer.innerText);
         updateLapsList(lapsArray[lapsArray.length -1], lapsArray.length);
+        checkButtnsCondition();
     };
 
     saveSessionBtn.onclick = function () {
@@ -155,11 +176,16 @@ window.onload = function() {
         }
         localStorage.setItem('sessions', JSON.stringify(sessionsArray));
         resetTimer();
+        checkButtnsCondition();
     };
 
     loadSessionBtn.onclick = function () {
+        checkButtnsCondition();
+        if(localStorage.getItem('sessions') === null) {
+            echo('sorry dude');
+            toolTip.style.display = 'block';
+        }
         sessionsView.style.visibility = 'visible';
-        localStorage.getItem('sessions');
         universalSessionsShowcase(sessionsArray);
     };
 };
