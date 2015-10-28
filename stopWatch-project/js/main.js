@@ -24,7 +24,7 @@ window.onload = function() {
     var endResult = '00:00:00:00';
     var startingPoint;
     timer.textContent = endResult;
-    toolTip.style.display = 'none';
+    toolTip.style.visibility = 'hidden';
     popUpBlock.style.visibility = 'hidden';
     resetBtn.disabled = true;
     saveLapsBtn.disabled = true;
@@ -45,7 +45,7 @@ window.onload = function() {
     }
 
     function checkButtnsCondition (){
-        toolTip.style.display = 'none';
+        //popUpBlock.style.visibility = 'hidden';
         if(isTimerRunning === true && lapsArray.length === 0){
             resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
@@ -183,9 +183,13 @@ window.onload = function() {
     };
 
     loadSessionBtn.onclick = function () {
+        isTimerRunning = false;
+        clearInterval(startingPoint);
+
         popUpBlock.style.visibility = 'visible';
         if(localStorage.getItem('sessions') === null) {
-            toolTip.style.display = 'block';
+            popUpBlock.style.visibility = 'visible';
+            toolTip.style.visibility = 'visible';
         }
         universalSessionsShowcase(sessionsArray);
         checkButtnsCondition();
@@ -193,7 +197,17 @@ window.onload = function() {
 
     sessionsView.onclick = function(e) {
         if(e.target.getAttribute('class') === 'close' ) {
-            echo('close');
+            if(localStorage.getItem('sessions') === null) {
+                toolTip.style.visibility = 'hidden';
+                popUpBlock.style.visibility = 'hidden';
+            } else {
+                popUpBlock.style.visibility = 'hidden';
+            }
+            if(timer.textContent !== endResult && isTimerRunning === false) {
+                if(startBtn.innerText === 'Pause') {
+                    toggleTimerRunning();
+                }
+            }
         }
         else if(e.target.getAttribute('class') !== null && e.target.getAttribute('class') !== 'close'){
             lapView.innerHTML = '';
@@ -203,10 +217,8 @@ window.onload = function() {
                 runningLapListItem.innerHTML = '<span><strong>'+ 'lap #' + (lapsId + 1) + ': ' + '</strong>' +  sessionsArray[targetMatchWithSessionNumber][lapsId] + '</span>';
                 lapView.appendChild(runningLapListItem);
             }
+            resetTimer();
         }
         popUpBlock.style.visibility = 'hidden';
-
     };
-
-
 };
