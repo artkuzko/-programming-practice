@@ -169,7 +169,7 @@ window.onload = function() {
     saveSessionBtn.onclick = function () {
         var newLapsArray = lapsArray.slice();
         if(sessionsArray.length > 0) {
-            if(sessionsArray[sessionsArray.length - 1].join() == lapsArray.join()) {
+            if(sessionsArray[sessionsArray.length - 1].join() === lapsArray.join()) {
                 return false;
             } else {
                 sessionsArray.push(newLapsArray);
