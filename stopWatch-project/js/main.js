@@ -8,6 +8,7 @@ function echo(anyData) {
 window.onload = function() {
     var lapView = document.getElementById('lapView');
     var sessionsView = document.getElementById('sampleSessions');
+    var popUpBlock = document.getElementById('popHover');
     var startBtn = document.getElementById('starter');
     var timer = document.getElementById('timer');
     var toolTip = document.getElementById('tooltip');
@@ -16,7 +17,6 @@ window.onload = function() {
     var saveSessionBtn = document.getElementById('saveSession');
     var loadSessionBtn = document.getElementById('loadSession');
     var sessionList = document.createElement('ul');//-- created UL tag for displaying the running sessions within it
-    var lapsDisplaylist;
     var savedSessions = localStorage.getItem('sessions');
     var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedSessions) : [];
     var lapsArray = [];
@@ -25,7 +25,7 @@ window.onload = function() {
     var startingPoint;
     timer.textContent = endResult;
     toolTip.style.display = 'none';
-    sessionsView.style.visibility = 'hidden';
+    popUpBlock.style.visibility = 'hidden';
     resetBtn.disabled = true;
     saveLapsBtn.disabled = true;
     saveSessionBtn.disabled = true;
@@ -41,7 +41,7 @@ window.onload = function() {
             isTimerRunning = false;
             startBtn.innerText = 'Start';
         }
-        checkButtnsCondition()
+        checkButtnsCondition();
     }
 
     function checkButtnsCondition (){
@@ -50,10 +50,11 @@ window.onload = function() {
             resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
         }
-        else if(timer.textContent !== endResult && isTimerRunning === false && lapsArray. length === 0) {
+        else if(timer.textContent !== endResult && isTimerRunning === false && lapsArray.length === 0) {
             resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
         }
+
         else if (isTimerRunning === false && lapsArray.length > 0){
             resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
@@ -62,14 +63,16 @@ window.onload = function() {
                 saveSessionBtn.disabled = false;
             }
         }
-        else if(isTimerRunning === false && lapsArray.length > 0) {
-            saveLapsBtn.disabled = false;
-            saveSessionBtn.disabled = false;
-        }
+
         else if(isTimerRunning === true && lapsArray.length > 0) {
+            resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
-            saveSessionBtn.disabled = false;
+
+            if(timer.textContent === lapsArray[lapsArray.length -1]) {
+                saveSessionBtn.disabled = false;
+            }
         }
+
         else {
             resetBtn.disabled = true;
             saveLapsBtn.disabled = true;
@@ -142,17 +145,10 @@ window.onload = function() {
         sessionList.innerHTML = '';
         for(var sessionId = 0; sessionId < sessionArray.length; sessionId++) {
             var runningSessionListItem = document.createElement('li');
-            runningSessionListItem.innerHTML = '<a href="#">' + 'show session-' + (sessionId + 1) +'</a><ul class="sessionBlock" id="sessionBlock-' + sessionId+ '"></ul>';
+            runningSessionListItem.innerHTML = '<a href="#" class="sessionLink" data-session-index-="' + sessionId + '">' + 'show session-' + (sessionId + 1) +'</a><ul class="sessionBlock" id="sessionBlock-' + sessionId+ '"></ul>';
             sessionList.appendChild(runningSessionListItem);
-            sessionsView.appendChild(sessionList);
-
-            for(var lapsId = 0; lapsId < sessionArray[sessionId].length; lapsId++) {
-                lapsDisplaylist = document.getElementById('sessionBlock-'+ sessionId);
-                var runningLapListItem = document.createElement('li');
-                runningLapListItem.innerHTML = '<span><strong>'+ 'lap # : ' + (lapsId + 1) + '</strong>' + sessionArray[sessionId][lapsId] + '</span>';
-                lapsDisplaylist.appendChild(runningLapListItem);
-            }
         }
+        sessionsView.appendChild(sessionList);
     }
 
     startBtn.onclick = function () {
@@ -171,21 +167,46 @@ window.onload = function() {
     };
 
     saveSessionBtn.onclick = function () {
-        if(lapsArray.length) {
-            sessionsArray.push(lapsArray);
+        var newLapsArray = lapsArray.slice();
+        if(sessionsArray.length > 0) {
+            if(sessionsArray[sessionsArray.length - 1].join() == lapsArray.join()) {
+                return false;
+            } else {
+                sessionsArray.push(newLapsArray);
+            }
+        }
+        else if(sessionsArray.length === 0) {
+            sessionsArray.push(newLapsArray);
         }
         localStorage.setItem('sessions', JSON.stringify(sessionsArray));
-        resetTimer();
         checkButtnsCondition();
     };
 
     loadSessionBtn.onclick = function () {
-        checkButtnsCondition();
+        popUpBlock.style.visibility = 'visible';
         if(localStorage.getItem('sessions') === null) {
-            echo('sorry dude');
             toolTip.style.display = 'block';
         }
-        sessionsView.style.visibility = 'visible';
         universalSessionsShowcase(sessionsArray);
+        checkButtnsCondition();
     };
+
+    sessionsView.onclick = function(e) {
+        if(e.target.getAttribute('class') === 'close' ) {
+            echo('close');
+        }
+        else if(e.target.getAttribute('class') !== null && e.target.getAttribute('class') !== 'close'){
+            lapView.innerHTML = '';
+            var targetMatchWithSessionNumber = e.target.getAttribute('data-session-index-');
+            for(var lapsId = 0; lapsId < sessionsArray[targetMatchWithSessionNumber].length; lapsId++) {
+                var runningLapListItem = document.createElement('li');
+                runningLapListItem.innerHTML = '<span><strong>'+ 'lap #' + (lapsId + 1) + ': ' + '</strong>' +  sessionsArray[targetMatchWithSessionNumber][lapsId] + '</span>';
+                lapView.appendChild(runningLapListItem);
+            }
+        }
+        popUpBlock.style.visibility = 'hidden';
+
+    };
+
+
 };
