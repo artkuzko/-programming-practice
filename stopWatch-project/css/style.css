@@ -12,12 +12,20 @@ body {
     min-height: 1019px;
     height: 100%;
 }
+.btn {
+    width: 18%;
+    margin: 0 1%;
+}
+#btnsPanel p {
+    font-size: 0;
+}
 .display-panel {
     border: 1px solid crimson;
     -webkit-border-radius: 8px;
     -moz-border-radius: 8px;
     border-radius: 8px;
-    padding: 2% 1.5%;
+    padding: 1% 2%;
+    margin-bottom: 3%;
 }
 #timer {
     font-size: 18px;
