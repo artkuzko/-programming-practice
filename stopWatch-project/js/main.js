@@ -6,6 +6,8 @@ function echo(anyData) {
 }
 
 window.onload = function() {
+    var lapsList = document.createElement('ul');
+    var yourSessionsArchive = document.getElementById('yourSessionsArchive');
     var lapView = document.getElementById('lapView');
     var sessionsView = document.getElementById('sampleSessions');
     var popUpBlock = document.getElementById('popHover');
@@ -32,9 +34,17 @@ window.onload = function() {
 
     function toggleTimerRunning() {
         if(!isTimerRunning) {
-            startTimer();
-            isTimerRunning = true;
-            startBtn.innerText = 'Pause';
+            if(timer.textContent === lapsArray[lapsArray.length -1]) {
+                var frozenTime = lapsArray[lapsArray.length -1].split(':');
+                continueTimer(frozenTime);
+                isTimerRunning = true;
+                startBtn.innerText = 'Pause';
+            }
+            else if(timer.textContent !== lapsArray[lapsArray.length -1] || timer.textContent === endResult) {
+                startTimer();
+                isTimerRunning = true;
+                startBtn.innerText = 'Pause';
+            }
         }
         else {
             clearInterval(startingPoint);
@@ -79,15 +89,21 @@ window.onload = function() {
             saveSessionBtn.disabled = true;
         }
     }
-
-    function startTimer() {
+    function continueTimer(currTimerResult) {
+        ms = currTimerResult[3];
+        sec = currTimerResult[2];
+        min = currTimerResult[1];
+        hours = currTimerResult[0];
         startingPoint = setInterval(function () {
             ms++;
+            if(ms>0 && ms < 10) {
+                ms = '0' + ms;
+            }
             if(ms > 99) {
                 ms = 0;
                 sec++;
-                if(sec > 0 && sec < 10) {
-                    sec =  '0' + sec;
+                if(sec >= 0 && sec < 10) {
+                    sec = '0' + sec;
                 }
             }
             if (sec >= 60) {
@@ -103,6 +119,52 @@ window.onload = function() {
                 if(hours > 0 && hours < 10) {
                     hours = '0' + hours;
                 }
+            }
+            if(ms === 0) {
+                ms = '00';
+            }
+            if(sec === 0) {
+                sec = '00';
+            }
+            if(min === 0) {
+                min = '00';
+            }
+            if(hours === 0) {
+                hours = '00';
+            }
+            timer.textContent = hours + ':' + min + ':' + sec + ':' + ms ;
+
+        } ,10);
+    }
+    function startTimer() {
+        startingPoint = setInterval(function () {
+            ms++;
+            if(ms>0 && ms < 10) {
+                ms = '0' + ms;
+            }
+            if(ms > 99) {
+                ms = 0;
+                sec++;
+                if(sec >= 0 && sec < 10) {
+                    sec = '0' + sec;
+                }
+            }
+            if (sec >= 60) {
+                sec = 0;
+                min++;
+                if(min > 0 && min < 10) {
+                    min = '0' + min;
+                }
+            }
+            if(min >= 60) {
+                min = 0;
+                hours++;
+                if(hours > 0 && hours < 10) {
+                    hours = '0' + hours;
+                }
+            }
+            if(ms === 0) {
+                ms = '00';
             }
             if(sec === 0) {
                 sec = '00';
@@ -136,8 +198,10 @@ window.onload = function() {
     }
 
     function updateLapsList(lapContent, lapId) {
-        var lapsList = document.createElement('ul');
-        lapsList.innerHTML = '<li class="list-lap" data-lap-num="' + lapId + '"><span>'+ 'lap #: ' + lapId + '</span>'+ ' ' + lapContent + '</li>';
+        var lapsListItem;
+        lapsListItem = document.createElement('li');
+        lapsListItem.innerHTML = '<p class="list-lap" data-lap-num="' + (lapId +1) + '"><span><strong>'+ 'lap #'+ (lapId +1) + ': ' + '</strong></span>' + lapContent + '</p>';
+        lapsList.appendChild(lapsListItem);
         lapView.appendChild(lapsList);
     }
 
@@ -162,7 +226,7 @@ window.onload = function() {
 
     saveLapsBtn.onclick = function () {
         lapsArray.push(timer.innerText);
-        updateLapsList(lapsArray[lapsArray.length -1], lapsArray.length);
+        updateLapsList(lapsArray[lapsArray.length -1], lapsArray.length-1 );
         checkButtnsCondition();
     };
 
@@ -210,15 +274,19 @@ window.onload = function() {
             }
         }
         else if(e.target.getAttribute('class') !== null && e.target.getAttribute('class') !== 'close'){
-            lapView.innerHTML = '';
+            lapsList.innerHTML = '';
             var targetMatchWithSessionNumber = e.target.getAttribute('data-session-index-');
+            lapsArray = [];
             for(var lapsId = 0; lapsId < sessionsArray[targetMatchWithSessionNumber].length; lapsId++) {
-                var runningLapListItem = document.createElement('li');
-                runningLapListItem.innerHTML = '<span><strong>'+ 'lap #' + (lapsId + 1) + ': ' + '</strong>' +  sessionsArray[targetMatchWithSessionNumber][lapsId] + '</span>';
-                lapView.appendChild(runningLapListItem);
+                updateLapsList(sessionsArray[targetMatchWithSessionNumber][lapsId], lapsId);
+                lapsArray.push(sessionsArray[targetMatchWithSessionNumber][lapsId]);
             }
-            resetTimer();
+            resetBtn.disabled = false;
+            saveLapsBtn.disabled = true;
+            startBtn.innerText = 'Start';
+            timer.textContent = sessionsArray[targetMatchWithSessionNumber][sessionsArray[targetMatchWithSessionNumber].length - 1];
+            clearInterval(startingPoint);
+            popUpBlock.style.visibility = 'hidden';
         }
-        popUpBlock.style.visibility = 'hidden';
     };
 };
