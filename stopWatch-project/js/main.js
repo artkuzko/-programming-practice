@@ -6,7 +6,8 @@ function echo(anyData) {
 }
 
 window.onload = function() {
-    var lapsList = document.createElement('ul');
+    var lapsList = document.createElement('ul'); //create UL for inserting and displaying Laps you've ran
+    var sessionList = document.createElement('ul');//-- create UL tag for displaying the running sessions within it
     var yourSessionsArchive = document.getElementById('yourSessionsArchive');
     var lapView = document.getElementById('lapView');
     var sessionsView = document.getElementById('sampleSessions');
@@ -18,7 +19,6 @@ window.onload = function() {
     var resetBtn = document.getElementById('reset');
     var saveSessionBtn = document.getElementById('saveSession');
     var loadSessionBtn = document.getElementById('loadSession');
-    var sessionList = document.createElement('ul');//-- created UL tag for displaying the running sessions within it
     var savedSessions = localStorage.getItem('sessions');
     var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedSessions) : [];
     var lapsArray = [];
@@ -159,8 +159,7 @@ window.onload = function() {
     }
 
     function updateLapsItem(lapContent, lapId) {
-        var lapsListItem;
-        lapsListItem = document.createElement('li');
+        var lapsListItem = document.createElement('li');
         lapsListItem.innerHTML = '<p class="list-lap" data-lap-num="' + (lapId +1) + '"><span><strong>'+ 'lap #'+ (lapId +1) + ': ' + '</strong></span>' + lapContent + '</p>';
         lapsList.appendChild(lapsListItem);
         lapView.appendChild(lapsList);
@@ -191,18 +190,27 @@ window.onload = function() {
         checkButtnsCondition();
     };
 
+    /**
+     * Here we create a copy of lapsArray
+     * than we create a loop to check if the last Lap
+     * of the target session is unique. If it is not we return
+     * from the function.
+     * otherwise we just push a newLapsArray with the newly
+     * created lap in the end of the sessionsArray
+     */
     saveSessionBtn.onclick = function () {
         var newLapsArray = lapsArray.slice();
-        if(sessionsArray.length > 0) {
-            if(sessionsArray[sessionsArray.length - 1].join() === lapsArray.join()) {
-                return false;
-            } else {
-                sessionsArray.push(newLapsArray);
+        for(var sessionAnchor = 0, sessionAmount = sessionsArray.length; sessionAnchor < sessionAmount; sessionAnchor++) {
+            for(var lapsAnchor = 0, lapsAmount = sessionsArray[sessionAnchor].length; lapsAnchor < lapsAmount; lapsAnchor++) {
+                if(sessionsArray[sessionAnchor][lapsAnchor] === newLapsArray[newLapsArray.length - 1]) {
+                    echo(sessionAnchor + '--' + lapsAnchor + '---' + 'flag check (1)');
+                    return;
+                } else {
+                    echo(sessionAnchor + '--' + lapsAnchor + '---' + 'flag check (2)');
+                }
             }
         }
-        else if(sessionsArray.length === 0) {
-            sessionsArray.push(newLapsArray);
-        }
+        sessionsArray.push(newLapsArray);
         localStorage.setItem('sessions', JSON.stringify(sessionsArray));
         checkButtnsCondition();
     };
