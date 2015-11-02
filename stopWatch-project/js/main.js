@@ -22,44 +22,62 @@ window.onload = function() {
     var savedSessions = localStorage.getItem('sessions');
     var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedSessions) : [];
     var lapsArray = [];
-    var ms = 0, min = 0, sec = 0, hours = 0, isTimerRunning = false;
-    var endResult = '00:00:00:00';
-    var startingPoint;
-    timer.textContent = endResult;
+    var isTimerRunning = false;
+    var ms, sec, min, hours;
+    var startingPoint, startingTime;
     toolTip.style.visibility = 'hidden';
     popUpBlock.style.visibility = 'hidden';
     resetBtn.disabled = true;
     saveLapsBtn.disabled = true;
     saveSessionBtn.disabled = true;
 
+    /**
+     * Here we declare and immediately invoke function, that will return us the current timer value.
+     * Before the timer starts, it sets the starting value for the timer.
+     * When the timer starts, function enters another condition to check, whether the laps array, sessions array aren't empty
+     * and timer is not running, to set the timer value equal to the last lapsArray element
+     * and return the timer value;
+     * */
+    function retrieveCurrentTimerValue() {
+        if(timer.textContent === '') {
+            ms= 0; sec = 0; min = 0; hours = 0;
+            startingTime = '00:00:00:00';
+            return timer.textContent = startingTime;
+        }
+        else {
+            if(lapsArray.length > 0 && sessionsArray.length > 0  && isTimerRunning === false) {
+                var frozenTime = lapsArray[lapsArray.length - 1].split(':');
+                ms = frozenTime[3];
+                sec = frozenTime[2];
+                min = frozenTime[1];
+                hours = frozenTime[0];
+            }
+            return timer.textContent = hours + ':' + min + ':' + sec + ':' + ms;
+        }
+
+    }
+    retrieveCurrentTimerValue();
+
     function toggleTimerRunning() {
         if(!isTimerRunning) {
-            if(timer.textContent === lapsArray[lapsArray.length -1]) {
-                var frozenTime = lapsArray[lapsArray.length -1].split(':');
-                continueTimer(frozenTime);
-                isTimerRunning = true;
-                startBtn.innerText = 'Pause';
-            }
-            else if(timer.textContent !== lapsArray[lapsArray.length -1] || timer.textContent === endResult) {
-                startTimer();
-                isTimerRunning = true;
-                startBtn.innerText = 'Pause';
-            }
+            startTimer();
+            isTimerRunning = true;
+            startBtn.innerText = 'Pause';
         }
         else {
             clearInterval(startingPoint);
             isTimerRunning = false;
             startBtn.innerText = 'Start';
         }
-        checkButtnsCondition();
+        checkButtonsCondition();
     }
 
-    function checkButtnsCondition (){
+    function checkButtonsCondition (){
         if(isTimerRunning === true && lapsArray.length === 0){
             resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
         }
-        else if(timer.textContent !== endResult && isTimerRunning === false && lapsArray.length === 0) {
+        else if(timer.textContent !== startingTime && isTimerRunning === false && lapsArray.length === 0) {
             resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
         }
@@ -89,18 +107,10 @@ window.onload = function() {
         }
     }
 
-    function continueTimer(currTimerResult) {
-        ms = currTimerResult[3];
-        sec = currTimerResult[2];
-        min = currTimerResult[1];
-        hours = currTimerResult[0];
-        startTimer();
-    }
-
     function startTimer() {
         startingPoint = setInterval(function () {
             ms++;
-            if(ms>0 && ms < 10) {
+            if(ms > 0 && ms < 10) {
                 ms = '0' + ms;
             }
             if(ms > 99) {
@@ -136,8 +146,7 @@ window.onload = function() {
             if(hours === 0) {
                 hours = '00';
             }
-            timer.textContent = hours + ':' + min + ':' + sec + ':' + ms ;
-
+            retrieveCurrentTimerValue();
         } ,10);
     }
 
@@ -149,7 +158,7 @@ window.onload = function() {
         sec = 0;
         min = 0;
         hours = 0;
-        timer.textContent = endResult;
+        timer.textContent = startingTime;
         lapsArray= [];
         var archiveLaps = document.getElementsByClassName('list-lap');
         for(var i = 0; i < archiveLaps.length; i++){
@@ -181,13 +190,13 @@ window.onload = function() {
 
     resetBtn.onclick = function () {
         resetTimer();
-        checkButtnsCondition();
+        checkButtonsCondition();
     };
 
     saveLapsBtn.onclick = function () {
         lapsArray.push(timer.innerText);
         updateLapsItem(lapsArray[lapsArray.length -1], lapsArray.length-1 );
-        checkButtnsCondition();
+        checkButtonsCondition();
     };
 
     /**
@@ -212,7 +221,7 @@ window.onload = function() {
         }
         sessionsArray.push(newLapsArray);
         localStorage.setItem('sessions', JSON.stringify(sessionsArray));
-        checkButtnsCondition();
+        checkButtonsCondition();
     };
 
     loadSessionBtn.onclick = function () {
@@ -225,7 +234,7 @@ window.onload = function() {
             toolTip.style.visibility = 'visible';
         }
         universalSessionsShowcase(sessionsArray);
-        checkButtnsCondition();
+        checkButtonsCondition();
     };
 
     sessionsView.onclick = function(e) {
@@ -236,15 +245,15 @@ window.onload = function() {
             } else {
                 popUpBlock.style.visibility = 'hidden';
             }
-            if(timer.textContent !== endResult && isTimerRunning === false) {
+            if(timer.textContent !== startingTime && isTimerRunning === false) {
                 if(startBtn.innerText === 'Pause') {
                     toggleTimerRunning();
                 }
             }
         }
         else if(e.target.getAttribute('class') !== null && e.target.getAttribute('class') !== 'close'){
-            lapsList.innerHTML = '';
             var targetMatchWithSessionNumber = e.target.getAttribute('data-session-index-');
+            lapsList.innerHTML = '';
             lapsArray = [];
             for(var lapsId = 0; lapsId < sessionsArray[targetMatchWithSessionNumber].length; lapsId++) {
                 updateLapsItem(sessionsArray[targetMatchWithSessionNumber][lapsId], lapsId);
@@ -253,7 +262,7 @@ window.onload = function() {
             resetBtn.disabled = false;
             saveLapsBtn.disabled = true;
             startBtn.innerText = 'Start';
-            timer.textContent = sessionsArray[targetMatchWithSessionNumber][sessionsArray[targetMatchWithSessionNumber].length - 1];
+            retrieveCurrentTimerValue();
             popUpBlock.style.visibility = 'hidden';
         }
     };
