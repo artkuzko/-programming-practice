@@ -31,7 +31,7 @@ window.onload = function() {
     var lapsArray = [];
     var isTimerRunning = false;
     var ms, sec, min, hours;
-    var startingPoint, startingTime;
+    var startingPoint;
     toolTip.style.visibility = 'hidden';
     popUpBlock.style.visibility = 'hidden';
     resetBtn.disabled = true;
@@ -43,23 +43,22 @@ window.onload = function() {
         timerObj.min = m;
         timerObj.sec = s;
         timerObj.ms = ms;
-
     }
 
     function displayTimerCurrentValue() {
-        if(timerObj.ms === 0) {
-            timerObj.ms = '00';
+        if(timerObj.ms > 99) {
+            timerObj.ms = 0;
+            timerObj.sec++;
         }
-        if(timerObj.sec === 0) {
-            timerObj.sec = '00';
+        if(timerObj.sec >= 60) {
+            timerObj.sec = 0;
+            timerObj.min++;
         }
-        if(timerObj.min === 0) {
-            timerObj.min = '00';
+        if(timerObj.min >= 60) {
+            timerObj.min = 0;
+            timerObj.hours++;
         }
-        if(timerObj.hours === 0) {
-            timerObj.hours = '00';
-        }
-        timer.textContent = timerObj.hours + ':' + timerObj.min + ':' + timerObj.sec + ':' + timerObj.ms;
+        timer.textContent = ((timerObj.hours < 10)?("0" + timerObj.hours + ':'):(timerObj.hours + ':'))+((timerObj.min < 10) ? ("0" + timerObj.min + ':') : (timerObj.min + ':')) + ((timerObj.sec < 10) ? ("0" + timerObj.sec + ':') : (timerObj.sec + ':')) + ((timerObj.ms < 10) ? ("0" + timerObj.ms ) : (timerObj.ms ));
     }
     setTimerCurrentValue(timerObj.hours, timerObj.min, timerObj.sec, timerObj.ms);
     displayTimerCurrentValue();
@@ -143,44 +142,36 @@ window.onload = function() {
         }
     }
 
-    function addStartingZero(timerParam) {
-        echo(timerParam);
-        if(timerParam >= 0 && timerParam < 10) {
-            timerParam = '0' + timerParam;
-            echo(timerParam);
-            return timerParam;
-        }
-    }
-
     function startTimer () {
         startingPoint = setInterval(function() {
             timerObj.ms++;
-            if(timerObj.ms > 0 && timerObj.ms < 10) {
-                timerObj.ms = '0' + timerObj.ms;
-            }
-            if(timerObj.ms > 99) {
-                timerObj.ms = 0;
-                timerObj.sec++;
-                if(timerObj.sec >= 0 && timerObj.sec < 10) {
-                    timerObj.sec = '0' + timerObj.sec;
-                }
-            }
-            if (timerObj.sec >= 60) {
-                timerObj.sec = 0;
-                timerObj.min++;
-                if(timerObj.min >= 0 && timerObj.min < 10) {
-                    timerObj.min = '0' + timerObj.min;
-                }
-            }
-            if(timerObj.min >= 60) {
-                timerObj.min = 0;
-                timerObj.hours++;
-                if(timerObj.hours >= 0 && timerObj.hours < 10) {
-                    timerObj.hours = '0' + timerObj.hours;
-                }
-            }
+            setTimerCurrentValue(timerObj.hours, timerObj.min, timerObj.sec, timerObj.ms);
+            //if(timerObj.ms > 0 && timerObj.ms < 10) {
+            //    timerObj.ms = '0' + timerObj.ms;
+            //}
+            //if(timerObj.ms > 99) {
+            //    timerObj.ms = 0;
+            //    timerObj.sec++;
+            //    if(timerObj.sec >= 0 && timerObj.sec < 10) {
+            //        timerObj.sec = '0' + timerObj.sec;
+            //    }
+            //}
+            //if (timerObj.sec >= 60) {
+            //    timerObj.sec = 0;
+            //    timerObj.min++;
+            //    if(timerObj.min >= 0 && timerObj.min < 10) {
+            //        timerObj.min = '0' + timerObj.min;
+            //    }
+            //}
+            //if(timerObj.min >= 60) {
+            //    timerObj.min = 0;
+            //    timerObj.hours++;
+            //    if(timerObj.hours >= 0 && timerObj.hours < 10) {
+            //        timerObj.hours = '0' + timerObj.hours;
+            //    }
+            //}
+
             displayTimerCurrentValue();
-            timerObj.ms++;
         }, 10);
     }
 
