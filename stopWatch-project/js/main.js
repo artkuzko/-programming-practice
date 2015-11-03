@@ -21,6 +21,13 @@ window.onload = function() {
     var loadSessionBtn = document.getElementById('loadSession');
     var savedSessions = localStorage.getItem('sessions');
     var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedSessions) : [];
+    var timerObj = {
+        hours: 0,
+        min: 0,
+        sec: 0,
+        ms: 0
+    };
+    var startingTime = '00:00:00:00';
     var lapsArray = [];
     var isTimerRunning = false;
     var ms, sec, min, hours;
@@ -31,6 +38,32 @@ window.onload = function() {
     saveLapsBtn.disabled = true;
     saveSessionBtn.disabled = true;
 
+    function setTimerCurrentValue(h, m, s, ms) {
+        timerObj.hours = h;
+        timerObj.min = m;
+        timerObj.sec = s;
+        timerObj.ms = ms;
+
+    }
+
+    function displayTimerCurrentValue() {
+        if(timerObj.ms === 0) {
+            timerObj.ms = '00';
+        }
+        if(timerObj.sec === 0) {
+            timerObj.sec = '00';
+        }
+        if(timerObj.min === 0) {
+            timerObj.min = '00';
+        }
+        if(timerObj.hours === 0) {
+            timerObj.hours = '00';
+        }
+        timer.textContent = timerObj.hours + ':' + timerObj.min + ':' + timerObj.sec + ':' + timerObj.ms;
+    }
+    setTimerCurrentValue(timerObj.hours, timerObj.min, timerObj.sec, timerObj.ms);
+    displayTimerCurrentValue();
+
     /**
      * Here we declare and immediately invoke function, that will return us the current timer value.
      * Before the timer starts, it sets the starting value for the timer.
@@ -38,25 +71,27 @@ window.onload = function() {
      * and timer is not running, to set the timer value equal to the last lapsArray element
      * and return the timer value;
      * */
-    function retrieveCurrentTimerValue() {
-        if(timer.textContent === '') {
-            ms= 0; sec = 0; min = 0; hours = 0;
-            startingTime = '00:00:00:00';
-            return timer.textContent = startingTime;
-        }
-        else {
-            if(lapsArray.length > 0 && sessionsArray.length > 0  && isTimerRunning === false) {
-                var frozenTime = lapsArray[lapsArray.length - 1].split(':');
-                ms = frozenTime[3];
-                sec = frozenTime[2];
-                min = frozenTime[1];
-                hours = frozenTime[0];
-            }
-            return timer.textContent = hours + ':' + min + ':' + sec + ':' + ms;
-        }
 
-    }
-    retrieveCurrentTimerValue();
+    //function retrieveCurrentTimerValue() {
+    //    if(timer.textContent === '') {
+    //        ms= 0; sec = 0; min = 0; hours = 0;
+    //        startingTime = '00:00:00:00';
+    //        return timer.textContent = startingTime;
+    //    }
+    //    else {
+    //        if(lapsArray.length > 0 && sessionsArray.length > 0  && isTimerRunning === false) {
+    //            var frozenTime = lapsArray[lapsArray.length - 1].split(':');
+    //            ms = frozenTime[3];
+    //            sec = frozenTime[2];
+    //            min = frozenTime[1];
+    //            hours = frozenTime[0];
+    //        }
+    //        return timer.textContent = hours + ':' + min + ':' + sec + ':' + ms;
+    //    }
+    //
+    //}
+
+    //retrieveCurrentTimerValue();
 
     function toggleTimerRunning() {
         if(!isTimerRunning) {
@@ -78,6 +113,7 @@ window.onload = function() {
             saveLapsBtn.disabled = false;
         }
         else if(timer.textContent !== startingTime && isTimerRunning === false && lapsArray.length === 0) {
+            echo(timer.textContent === startingTime);
             resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
         }
@@ -95,7 +131,7 @@ window.onload = function() {
             resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
 
-            if(timer.textContent === lapsArray[lapsArray.length -1]) {
+            if(timer.textContent === lapsArray[lapsArray.length - 1]) {
                 saveSessionBtn.disabled = false;
             }
         }
@@ -107,64 +143,55 @@ window.onload = function() {
         }
     }
 
-    function startTimer() {
-        startingPoint = setInterval(function () {
-            ms++;
-            if(ms > 0 && ms < 10) {
-                ms = '0' + ms;
+    function addStartingZero(timerParam) {
+        echo(timerParam);
+        if(timerParam >= 0 && timerParam < 10) {
+            timerParam = '0' + timerParam;
+            echo(timerParam);
+            return timerParam;
+        }
+    }
+
+    function startTimer () {
+        startingPoint = setInterval(function() {
+            timerObj.ms++;
+            if(timerObj.ms > 0 && timerObj.ms < 10) {
+                timerObj.ms = '0' + timerObj.ms;
             }
-            if(ms > 99) {
-                ms = 0;
-                sec++;
-                if(sec >= 0 && sec < 10) {
-                    sec = '0' + sec;
+            if(timerObj.ms > 99) {
+                timerObj.ms = 0;
+                timerObj.sec++;
+                if(timerObj.sec >= 0 && timerObj.sec < 10) {
+                    timerObj.sec = '0' + timerObj.sec;
                 }
             }
-            if (sec >= 60) {
-                sec = 0;
-                min++;
-                if(min > 0 && min < 10) {
-                    min = '0' + min;
+            if (timerObj.sec >= 60) {
+                timerObj.sec = 0;
+                timerObj.min++;
+                if(timerObj.min >= 0 && timerObj.min < 10) {
+                    timerObj.min = '0' + timerObj.min;
                 }
             }
-            if(min >= 60) {
-                min = 0;
-                hours++;
-                if(hours > 0 && hours < 10) {
-                    hours = '0' + hours;
+            if(timerObj.min >= 60) {
+                timerObj.min = 0;
+                timerObj.hours++;
+                if(timerObj.hours >= 0 && timerObj.hours < 10) {
+                    timerObj.hours = '0' + timerObj.hours;
                 }
             }
-            if(ms === 0) {
-                ms = '00';
-            }
-            if(sec === 0) {
-                sec = '00';
-            }
-            if(min === 0) {
-                min = '00';
-            }
-            if(hours === 0) {
-                hours = '00';
-            }
-            retrieveCurrentTimerValue();
-        } ,10);
+            displayTimerCurrentValue();
+            timerObj.ms++;
+        }, 10);
     }
 
     function resetTimer() {
         clearInterval(startingPoint);
         isTimerRunning = false;
         startBtn.innerText = 'Start';
-        ms = 0;
-        sec = 0;
-        min = 0;
-        hours = 0;
-        timer.textContent = startingTime;
+        setTimerCurrentValue(0, 0, 0, 0);
+        displayTimerCurrentValue();
         lapsArray= [];
-        var archiveLaps = document.getElementsByClassName('list-lap');
-        for(var i = 0; i < archiveLaps.length; i++){
-            archiveLaps[i].parentNode.removeChild(archiveLaps[i]);
-            i--;
-        }
+        lapsList.innerHTML = '';
     }
 
     function updateLapsItem(lapContent, lapId) {
@@ -262,7 +289,6 @@ window.onload = function() {
             resetBtn.disabled = false;
             saveLapsBtn.disabled = true;
             startBtn.innerText = 'Start';
-            retrieveCurrentTimerValue();
             popUpBlock.style.visibility = 'hidden';
         }
     };
