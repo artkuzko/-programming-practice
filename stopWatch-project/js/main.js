@@ -30,7 +30,6 @@ window.onload = function() {
     var startingTime = '00:00:00:00';
     var lapsArray = [];
     var isTimerRunning = false;
-    var ms, sec, min, hours;
     var startingPoint;
     toolTip.style.visibility = 'hidden';
     popUpBlock.style.visibility = 'hidden';
@@ -46,51 +45,22 @@ window.onload = function() {
     }
 
     function displayTimerCurrentValue() {
-        if(timerObj.ms > 99) {
-            timerObj.ms = 0;
-            timerObj.sec++;
+        var h = timerObj.hours, m = timerObj.min, s = timerObj.sec, ms = timerObj.ms;
+        if(h < 10) {
+            h = '0' + h;
         }
-        if(timerObj.sec >= 60) {
-            timerObj.sec = 0;
-            timerObj.min++;
+        if(m < 10) {
+            m = '0' + m;
         }
-        if(timerObj.min >= 60) {
-            timerObj.min = 0;
-            timerObj.hours++;
+        if(s < 10) {
+            s = '0' + s;
         }
-        timer.textContent = ((timerObj.hours < 10)?("0" + timerObj.hours + ':'):(timerObj.hours + ':'))+((timerObj.min < 10) ? ("0" + timerObj.min + ':') : (timerObj.min + ':')) + ((timerObj.sec < 10) ? ("0" + timerObj.sec + ':') : (timerObj.sec + ':')) + ((timerObj.ms < 10) ? ("0" + timerObj.ms ) : (timerObj.ms ));
+        if(ms < 10) {
+            ms = '0' + ms;
+        }
+        timer.textContent = h + ':' + m + ':' + s + ':' + ms;
     }
-    setTimerCurrentValue(timerObj.hours, timerObj.min, timerObj.sec, timerObj.ms);
     displayTimerCurrentValue();
-
-    /**
-     * Here we declare and immediately invoke function, that will return us the current timer value.
-     * Before the timer starts, it sets the starting value for the timer.
-     * When the timer starts, function enters another condition to check, whether the laps array, sessions array aren't empty
-     * and timer is not running, to set the timer value equal to the last lapsArray element
-     * and return the timer value;
-     * */
-
-    //function retrieveCurrentTimerValue() {
-    //    if(timer.textContent === '') {
-    //        ms= 0; sec = 0; min = 0; hours = 0;
-    //        startingTime = '00:00:00:00';
-    //        return timer.textContent = startingTime;
-    //    }
-    //    else {
-    //        if(lapsArray.length > 0 && sessionsArray.length > 0  && isTimerRunning === false) {
-    //            var frozenTime = lapsArray[lapsArray.length - 1].split(':');
-    //            ms = frozenTime[3];
-    //            sec = frozenTime[2];
-    //            min = frozenTime[1];
-    //            hours = frozenTime[0];
-    //        }
-    //        return timer.textContent = hours + ':' + min + ':' + sec + ':' + ms;
-    //    }
-    //
-    //}
-
-    //retrieveCurrentTimerValue();
 
     function toggleTimerRunning() {
         if(!isTimerRunning) {
@@ -141,36 +111,26 @@ window.onload = function() {
             saveSessionBtn.disabled = true;
         }
     }
+    function clearLapsList () {
+        lapsArray = [];
+        lapsList.innerHTML = '';
+    }
 
     function startTimer () {
         startingPoint = setInterval(function() {
             timerObj.ms++;
-            setTimerCurrentValue(timerObj.hours, timerObj.min, timerObj.sec, timerObj.ms);
-            //if(timerObj.ms > 0 && timerObj.ms < 10) {
-            //    timerObj.ms = '0' + timerObj.ms;
-            //}
-            //if(timerObj.ms > 99) {
-            //    timerObj.ms = 0;
-            //    timerObj.sec++;
-            //    if(timerObj.sec >= 0 && timerObj.sec < 10) {
-            //        timerObj.sec = '0' + timerObj.sec;
-            //    }
-            //}
-            //if (timerObj.sec >= 60) {
-            //    timerObj.sec = 0;
-            //    timerObj.min++;
-            //    if(timerObj.min >= 0 && timerObj.min < 10) {
-            //        timerObj.min = '0' + timerObj.min;
-            //    }
-            //}
-            //if(timerObj.min >= 60) {
-            //    timerObj.min = 0;
-            //    timerObj.hours++;
-            //    if(timerObj.hours >= 0 && timerObj.hours < 10) {
-            //        timerObj.hours = '0' + timerObj.hours;
-            //    }
-            //}
-
+            if(timerObj.ms > 99) {
+                timerObj.ms = 0;
+                timerObj.sec++;
+            }
+            if(timerObj.sec >= 60) {
+                timerObj.sec = 0;
+                timerObj.min++;
+            }
+            if(timerObj.min >= 60) {
+                timerObj.min = 0;
+                timerObj.hours++;
+            }
             displayTimerCurrentValue();
         }, 10);
     }
@@ -181,8 +141,7 @@ window.onload = function() {
         startBtn.innerText = 'Start';
         setTimerCurrentValue(0, 0, 0, 0);
         displayTimerCurrentValue();
-        lapsArray= [];
-        lapsList.innerHTML = '';
+        clearLapsList();
     }
 
     function updateLapsItem(lapContent, lapId) {
@@ -271,14 +230,17 @@ window.onload = function() {
         }
         else if(e.target.getAttribute('class') !== null && e.target.getAttribute('class') !== 'close'){
             var targetMatchWithSessionNumber = e.target.getAttribute('data-session-index-');
-            lapsList.innerHTML = '';
-            lapsArray = [];
+            var frozenTime = sessionsArray[targetMatchWithSessionNumber][(sessionsArray[targetMatchWithSessionNumber].length - 1)].split(':');
+            clearLapsList();
             for(var lapsId = 0; lapsId < sessionsArray[targetMatchWithSessionNumber].length; lapsId++) {
                 updateLapsItem(sessionsArray[targetMatchWithSessionNumber][lapsId], lapsId);
                 lapsArray.push(sessionsArray[targetMatchWithSessionNumber][lapsId]);
             }
             resetBtn.disabled = false;
             saveLapsBtn.disabled = true;
+            echo(frozenTime);
+            setTimerCurrentValue(+frozenTime[0], +frozenTime[1], +frozenTime[2], +frozenTime[3]);
+            displayTimerCurrentValue();
             startBtn.innerText = 'Start';
             popUpBlock.style.visibility = 'hidden';
         }
