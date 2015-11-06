@@ -75,16 +75,16 @@ window.onload = function() {
     }
 
     function checkButtonsCondition (){
+        resetBtn.disabled = true;
+        saveLapsBtn.disabled = true;
+        saveSessionBtn.disabled = true;
+
         if(isTimerRunning === false) {
             startBtn.textContent = 'Start';
-            if(timer.textContent === startingTime) {
-                resetBtn.disabled = true;
-                saveLapsBtn.disabled = true;
-                saveSessionBtn.disabled = true;
-            }
-            else {
-                if(lapsArray[lapsArray.length -1] === timer.textContent) {
-                    saveLapsBtn.disabled = true;
+            if(timer.textContent !== startingTime) {
+                resetBtn.disabled = false;
+                if(lapsArray[lapsArray.length -1] !== timer.textContent) {
+                    saveLapsBtn.disabled = false;
                 }
             }
         }
@@ -103,9 +103,6 @@ window.onload = function() {
                 }
             }
             saveSessionBtn.disabled = false;
-        }
-        else {
-            saveSessionBtn.disabled = true;
         }
     }
 
@@ -134,7 +131,6 @@ window.onload = function() {
             displayTimerCurrentValue();
         }, 10);
     }
-
 
     function resetTimer() {
         isTimerRunning = false;
