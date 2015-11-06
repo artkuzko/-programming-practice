@@ -21,6 +21,10 @@ window.onload = function() {
     var loadSessionBtn = document.getElementById('loadSession');
     var savedSessions = localStorage.getItem('sessions');
     var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedSessions) : [];
+    var startingTime = '00:00:00:00';
+    var lapsArray = [];
+    var isTimerRunning;
+    var startingPoint;
     var timer = {
         hours: 0,
         min: 0,
@@ -49,13 +53,6 @@ window.onload = function() {
             timeDisplay.textContent = h + ':' + m + ':' + s + ':' + ms;
         }
     };
-    var startingTime = '00:00:00:00';
-    var lapsArray = [];
-    //var isTimerRunning = false;
-    var isTimerRunning;
-    var startingPoint;
-    toolTip.style.visibility = 'hidden';
-    popUpBlock.style.visibility = 'hidden';
 
     timer.displayTimerCurrValue();
 
@@ -108,8 +105,21 @@ window.onload = function() {
             saveSessionBtn.disabled = false;
         }
     }
-
     checkButtonsCondition();
+
+    function togglePopUp (actionParam) {
+        if(actionParam === 'hide') {
+            toolTip.style.visibility = 'hidden';
+            popUpBlock.style.visibility = 'hidden';
+        }
+        else {
+            popUpBlock.style.visibility = 'visible';
+            if (localStorage.getItem('sessions') === null) {
+                toolTip.style.visibility = 'visible';
+            }
+        }
+    }
+    togglePopUp('hide');
 
     function clearLapsList () {
         lapsArray = [];
@@ -198,11 +208,7 @@ window.onload = function() {
     };
 
     loadSessionBtn.onclick = function () {
-        popUpBlock.style.visibility = 'visible';
-        if(localStorage.getItem('sessions') === null) {
-            popUpBlock.style.visibility = 'visible';
-            toolTip.style.visibility = 'visible';
-        }
+        togglePopUp('show');
         showSessions(sessionsArray);
         checkButtonsCondition();
         pauseTheTimer();
@@ -210,12 +216,6 @@ window.onload = function() {
 
     sessionsView.onclick = function(e) {
         if(e.target.getAttribute('class') === 'close' ) {
-            if(localStorage.getItem('sessions') === null) {
-                toolTip.style.visibility = 'hidden';
-                popUpBlock.style.visibility = 'hidden';
-            } else {
-                popUpBlock.style.visibility = 'hidden';
-            }
             if(startBtn.innerText === 'Pause') {
                 startTimer();
             }
@@ -230,7 +230,9 @@ window.onload = function() {
             }
             timer.setTimerValue(+frozenTime[0], +frozenTime[1], +frozenTime[2], +frozenTime[3]);
             timer.displayTimerCurrValue();
-            popUpBlock.style.visibility = 'hidden';
+        }
+        if(e.target.getAttribute('class') !== null) {
+            togglePopUp('hide');
         }
         checkButtonsCondition();
     };
