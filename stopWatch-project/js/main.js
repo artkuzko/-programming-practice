@@ -13,7 +13,7 @@ window.onload = function() {
     var sessionsView = document.getElementById('sampleSessions');
     var popUpBlock = document.getElementById('popHover');
     var startBtn = document.getElementById('starter');
-    var timer = document.getElementById('timer');
+    var timeDisplay = document.getElementById('timer');
     var toolTip = document.getElementById('tooltip');
     var saveLapsBtn = document.getElementById('saveLap');
     var resetBtn = document.getElementById('reset');
@@ -21,55 +21,55 @@ window.onload = function() {
     var loadSessionBtn = document.getElementById('loadSession');
     var savedSessions = localStorage.getItem('sessions');
     var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedSessions) : [];
-    var timerObj = {
+    var timer = {
         hours: 0,
         min: 0,
         sec: 0,
-        ms: 0
+        ms: 0,
+        setTimerValue: function (h, m, s, ms) {
+            this.hours = h;
+            this.min = m;
+            this.sec = s;
+            this.ms = ms;
+        },
+        displayTimerCurrValue: function () {
+            var h = this.hours, m = this.min, s = this.sec, ms = this.ms;
+            if(h < 10) {
+                h = '0' + h;
+            }
+            if(m < 10) {
+                m = '0' + m;
+            }
+            if(s < 10) {
+                s = '0' + s;
+            }
+            if(ms < 10) {
+                ms = '0' + ms;
+            }
+            timeDisplay.textContent = h + ':' + m + ':' + s + ':' + ms;
+        }
     };
     var startingTime = '00:00:00:00';
     var lapsArray = [];
-    var isTimerRunning = false;
+    //var isTimerRunning = false;
+    var isTimerRunning;
     var startingPoint;
     toolTip.style.visibility = 'hidden';
     popUpBlock.style.visibility = 'hidden';
 
-    function setTimerCurrentValue(h, m, s, ms) {
-        timerObj.hours = h;
-        timerObj.min = m;
-        timerObj.sec = s;
-        timerObj.ms = ms;
-    }
-
-    function displayTimerCurrentValue() {
-        var h = timerObj.hours, m = timerObj.min, s = timerObj.sec, ms = timerObj.ms;
-        if(h < 10) {
-            h = '0' + h;
-        }
-        if(m < 10) {
-            m = '0' + m;
-        }
-        if(s < 10) {
-            s = '0' + s;
-        }
-        if(ms < 10) {
-            ms = '0' + ms;
-        }
-        timer.textContent = h + ':' + m + ':' + s + ':' + ms;
-    }
-    displayTimerCurrentValue();
+    timer.displayTimerCurrValue();
 
     function pauseTheTimer() {
         clearInterval(startingPoint);
+        isTimerRunning = false;
     }
+    pauseTheTimer();
     function toggleTimerRunning() {
         if(!isTimerRunning) {
             startTimer();
-            isTimerRunning = true;
         }
         else {
             pauseTheTimer();
-            isTimerRunning = false;
         }
         checkButtonsCondition();
     }
@@ -81,9 +81,9 @@ window.onload = function() {
 
         if(isTimerRunning === false) {
             startBtn.textContent = 'Start';
-            if(timer.textContent !== startingTime) {
+            if(timeDisplay.textContent !== startingTime) {
                 resetBtn.disabled = false;
-                if(lapsArray[lapsArray.length -1] !== timer.textContent) {
+                if(lapsArray[lapsArray.length -1] !== timeDisplay.textContent) {
                     saveLapsBtn.disabled = false;
                 }
             }
@@ -94,13 +94,16 @@ window.onload = function() {
             saveLapsBtn.disabled = false;
         }
         if(lapsArray.length > 0) {
+            var saveSessionActive = true;
             for(var sessionAnchor = 0, sessionAmount = sessionsArray.length; sessionAnchor < sessionAmount; sessionAnchor++) {
                 for(var lapsAnchor = 0, lapsAmount = sessionsArray[sessionAnchor].length; lapsAnchor < lapsAmount; lapsAnchor++) {
                     if(sessionsArray[sessionAnchor][lapsAnchor] === lapsArray[lapsArray.length - 1]) {
-                        saveSessionBtn.disabled = true;
-                        return;
+                        return saveSessionActive = false;
                     }
                 }
+            }
+            if(saveSessionActive === false) {
+                saveSessionBtn.disabled = true;
             }
             saveSessionBtn.disabled = false;
         }
@@ -114,40 +117,40 @@ window.onload = function() {
     }
 
     function startTimer () {
+        isTimerRunning = true;
         startingPoint = setInterval(function() {
-            timerObj.ms++;
-            if(timerObj.ms > 99) {
-                timerObj.ms = 0;
-                timerObj.sec++;
+            timer.ms++;
+            if(timer.ms > 99) {
+                timer.ms = 0;
+                timer.sec++;
             }
-            if(timerObj.sec >= 60) {
-                timerObj.sec = 0;
-                timerObj.min++;
+            if(timer.sec >= 60) {
+                timer.sec = 0;
+                timer.min++;
             }
-            if(timerObj.min >= 60) {
-                timerObj.min = 0;
-                timerObj.hours++;
+            if(timer.min >= 60) {
+                timer.min = 0;
+                timer.hours++;
             }
-            displayTimerCurrentValue();
+            timer.displayTimerCurrValue();
         }, 10);
     }
 
     function resetTimer() {
-        isTimerRunning = false;
         pauseTheTimer();
         clearLapsList();
-        setTimerCurrentValue(0, 0, 0, 0);
-        displayTimerCurrentValue();
+        timer.setTimerValue(0, 0, 0, 0);
+        timer.displayTimerCurrValue();
     }
 
-    function updateLapsItem(lapContent, lapId) {
+    function addLap (lapContent, lapId) {
         var lapsListItem = document.createElement('li');
         lapsListItem.innerHTML = '<p class="list-lap" data-lap-num="' + (lapId +1) + '"><span><strong>'+ 'lap #'+ (lapId +1) + ': ' + '</strong></span>' + lapContent + '</p>';
         lapsList.appendChild(lapsListItem);
         lapView.appendChild(lapsList);
     }
 
-    function universalSessionsShowcase (sessionArray) {
+    function showSessions (sessionArray) {
         sessionList.innerHTML = '';
         for(var sessionId = 0; sessionId < sessionArray.length; sessionId++) {
             var runningSessionListItem = document.createElement('li');
@@ -167,8 +170,8 @@ window.onload = function() {
     };
 
     saveLapsBtn.onclick = function () {
-        lapsArray.push(timer.innerText);
-        updateLapsItem(lapsArray[lapsArray.length -1], lapsArray.length-1 );
+        lapsArray.push(timeDisplay.innerText);
+        addLap(lapsArray[lapsArray.length -1], lapsArray.length-1 );
         checkButtonsCondition();
     };
 
@@ -195,14 +198,14 @@ window.onload = function() {
     };
 
     loadSessionBtn.onclick = function () {
-        pauseTheTimer();
         popUpBlock.style.visibility = 'visible';
         if(localStorage.getItem('sessions') === null) {
             popUpBlock.style.visibility = 'visible';
             toolTip.style.visibility = 'visible';
         }
-        universalSessionsShowcase(sessionsArray);
+        showSessions(sessionsArray);
         checkButtonsCondition();
+        pauseTheTimer();
     };
 
     sessionsView.onclick = function(e) {
@@ -216,20 +219,17 @@ window.onload = function() {
             if(startBtn.innerText === 'Pause') {
                 startTimer();
             }
-            else if(startBtn.innerText === 'Start') {
-                pauseTheTimer();
-            }
         }
         else if(e.target.getAttribute('class') !== null && e.target.getAttribute('class') !== 'close'){
             var targetMatchWithSessionNumber = e.target.getAttribute('data-session-index-');
             var frozenTime = sessionsArray[targetMatchWithSessionNumber][(sessionsArray[targetMatchWithSessionNumber].length - 1)].split(':');
             clearLapsList();
             for(var lapsId = 0; lapsId < sessionsArray[targetMatchWithSessionNumber].length; lapsId++) {
-                updateLapsItem(sessionsArray[targetMatchWithSessionNumber][lapsId], lapsId);
+                addLap(sessionsArray[targetMatchWithSessionNumber][lapsId], lapsId);
                 lapsArray.push(sessionsArray[targetMatchWithSessionNumber][lapsId]);
             }
-            setTimerCurrentValue(+frozenTime[0], +frozenTime[1], +frozenTime[2], +frozenTime[3]);
-            displayTimerCurrentValue();
+            timer.setTimerValue(+frozenTime[0], +frozenTime[1], +frozenTime[2], +frozenTime[3]);
+            timer.displayTimerCurrValue();
             popUpBlock.style.visibility = 'hidden';
         }
         checkButtonsCondition();
