@@ -30,13 +30,13 @@ window.onload = function() {
         min: 0,
         sec: 0,
         ms: 0,
-        setTimerValue: function (h, m, s, ms) {
+        setValue: function (h, m, s, ms) {
             this.hours = h;
             this.min = m;
             this.sec = s;
             this.ms = ms;
         },
-        displayTimerCurrValue: function () {
+        displayCurrValue: function () {
             var h = this.hours, m = this.min, s = this.sec, ms = this.ms;
             if(h < 10) {
                 h = '0' + h;
@@ -52,36 +52,46 @@ window.onload = function() {
             }
             timeDisplay.textContent = h + ':' + m + ':' + s + ':' + ms;
         },
-        startTimer: function () {
-            var thisContext = this;
+        start: function () {
+            var that = this;
             isTimerRunning = true;
             startingPoint = setInterval(function() {
-                thisContext.ms++;
-                if(thisContext.ms > 99) {
-                    thisContext.ms = 0;
-                    thisContext.sec++;
+                that.ms++;
+                if(that.ms > 99) {
+                    that.ms = 0;
+                    that.sec++;
                 }
-                if(thisContext.sec >= 60) {
-                    thisContext.sec = 0;
-                    thisContext.min++;
+                if(that.sec >= 60) {
+                    that.sec = 0;
+                    that.min++;
                 }
-                if(thisContext.min >= 60) {
-                    thisContext.min = 0;
-                    thisContext.hours++;
+                if(that.min >= 60) {
+                    that.min = 0;
+                    that.hours++;
                 }
-                thisContext.displayTimerCurrValue();
+                that.displayCurrValue();
             }, 10);
         },
-        pauseTheTimer: function () {
+        pause: function () {
             clearInterval(startingPoint);
             isTimerRunning = false;
         },
-        resetTimer: function () {
-            this.pauseTheTimer();
+        reset: function () {
+            this.pause();
             clearLapsList();
-            timer.setTimerValue(0, 0, 0, 0);
-            timer.displayTimerCurrValue();
+            timer.setValue(0, 0, 0, 0);
+            timer.displayCurrValue();
+        },
+        toggleIsRunning: function () {
+            if(!isTimerRunning) {
+                this.start();
+            }
+            else {
+                this.pause();
+            }
+            checkButtonsCondition();
         }
+
     };
 
     function checkButtonsCondition (){
@@ -119,16 +129,6 @@ window.onload = function() {
         }
     }
 
-    function toggleTimerRunning() {
-        if(!isTimerRunning) {
-            timer.startTimer();
-        }
-        else {
-            timer.pauseTheTimer();
-        }
-        checkButtonsCondition();
-    }
-
     function togglePopUp (actionParam) {
         if(actionParam === 'hide') {
             toolTip.style.visibility = 'hidden';
@@ -164,12 +164,22 @@ window.onload = function() {
         sessionsView.appendChild(sessionList);
     }
 
+    function displayTargetSession (targetSession, currentTime) {
+        clearLapsList();
+        for(var lapsId = 0; lapsId < sessionsArray[targetSession].length; lapsId++) {
+            addLap(sessionsArray[targetSession][lapsId], lapsId);
+            lapsArray.push(sessionsArray[targetSession][lapsId]);
+        }
+        timer.setValue(+currentTime[0], +currentTime[1], +currentTime[2], +currentTime[3]);
+        timer.displayCurrValue();
+    }
+
     startBtn.onclick = function () {
-        toggleTimerRunning();
+        timer.toggleIsRunning();
     };
 
     resetBtn.onclick = function () {
-        timer.resetTimer();
+        timer.reset();
         checkButtonsCondition();
     };
 
@@ -205,25 +215,19 @@ window.onload = function() {
         togglePopUp('show');
         showSessions(sessionsArray);
         checkButtonsCondition();
-        timer.pauseTheTimer();
+        timer.pause();
     };
 
     sessionsView.onclick = function(e) {
         if(e.target.getAttribute('class') === 'close' ) {
             if(startBtn.innerText === 'Pause') {
-                timer.startTimer();
+                timer.start();
             }
         }
         else if(e.target.getAttribute('class') !== null && e.target.getAttribute('class') !== 'close'){
             var targetMatchWithSessionNumber = e.target.getAttribute('data-session-index-');
             var frozenTime = sessionsArray[targetMatchWithSessionNumber][(sessionsArray[targetMatchWithSessionNumber].length - 1)].split(':');
-            clearLapsList();
-            for(var lapsId = 0; lapsId < sessionsArray[targetMatchWithSessionNumber].length; lapsId++) {
-                addLap(sessionsArray[targetMatchWithSessionNumber][lapsId], lapsId);
-                lapsArray.push(sessionsArray[targetMatchWithSessionNumber][lapsId]);
-            }
-            timer.setTimerValue(+frozenTime[0], +frozenTime[1], +frozenTime[2], +frozenTime[3]);
-            timer.displayTimerCurrValue();
+            displayTargetSession(targetMatchWithSessionNumber, frozenTime);
         }
         if(e.target.getAttribute('class') !== null) {
             togglePopUp('hide');
@@ -231,8 +235,8 @@ window.onload = function() {
         checkButtonsCondition();
     };
 
-    timer.displayTimerCurrValue();
-    timer.pauseTheTimer();
+    timer.displayCurrValue();
+    timer.pause();
     checkButtonsCondition();
     togglePopUp('hide');
 };
