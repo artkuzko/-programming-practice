@@ -20,7 +20,6 @@ window.onload = function() {
     var saveSessionBtn = document.getElementById('saveSession');
     var loadSessionBtn = document.getElementById('loadSession');
     var savedSessions = localStorage.getItem('sessions');
-    var sessionsArray = (localStorage.getItem('sessions')!== null) ? JSON.parse(savedSessions) : [];
     var startingTime = '00:00:00:00';
     var lapsArray = [];
     var isTimerRunning;
@@ -93,13 +92,53 @@ window.onload = function() {
         }
 
     };
+    var sessions = {
+        sessionStorage: (localStorage.getItem('sessions')!== null) ? JSON.parse(savedSessions) : [],
+        showAll: function () {
+            sessionList.innerHTML = '';
+            for(var sessionId = 0; sessionId < this.sessionStorage.length; sessionId++) {
+                var runningSessionListItem = document.createElement('li');
+                runningSessionListItem.innerHTML = '<a href="#" class="sessionLink" data-session-index-="' + sessionId + '">' + 'show session-' + (sessionId + 1) +'</a><ul class="sessionBlock" id="sessionBlock-' + sessionId+ '"></ul>';
+                sessionList.appendChild(runningSessionListItem);
+            }
+            sessionsView.appendChild(sessionList);
+        },
 
+        showTarget: function (targetSession) {
+            clearLapsList();
+            for(var lapsId = 0; lapsId < this.sessionStorage[targetSession].length; lapsId++) {
+                addLap(this.sessionStorage[targetSession][lapsId], lapsId);
+                lapsArray.push(this.sessionStorage[targetSession][lapsId]);
+            }
+        },
+
+        save: function() {
+            /**
+             * Here we create a copy of lapsArray
+             * than we create a loop to check if the last Lap
+             * of the target session is unique. If it is not we return
+             * from the function.
+             * otherwise we just push a newLapsArray with the newly
+             * created lap in the end of the sessionsArray
+             */
+            var newLapsArray = lapsArray.slice();
+            for(var sessionAnchor = 0, sessionAmount = this.sessionStorage.length; sessionAnchor < sessionAmount; sessionAnchor++) {
+                for(var lapsAnchor = 0, lapsAmount = this.sessionStorage[sessionAnchor].length; lapsAnchor < lapsAmount; lapsAnchor++) {
+                    if(this.sessionStorage[sessionAnchor][lapsAnchor] === newLapsArray[newLapsArray.length - 1]) {
+                        return;
+                    }
+                }
+            }
+            this.sessionStorage.push(newLapsArray);
+            localStorage.setItem('sessions', JSON.stringify(this.sessionStorage));
+            checkButtonsCondition();
+        }
+    };
     function checkButtonsCondition (){
         resetBtn.disabled = true;
         saveLapsBtn.disabled = true;
         saveSessionBtn.disabled = true;
-
-        if(isTimerRunning === false) {
+        if(!isTimerRunning) {
             startBtn.textContent = 'Start';
             if(timeDisplay.textContent !== startingTime) {
                 resetBtn.disabled = false;
@@ -107,22 +146,21 @@ window.onload = function() {
                     saveLapsBtn.disabled = false;
                 }
             }
-        }
-        else {
+        } else {
             startBtn.textContent = 'Pause';
             resetBtn.disabled = false;
             saveLapsBtn.disabled = false;
         }
         if(lapsArray.length > 0) {
             var saveSessionActive = true;
-            for(var sessionAnchor = 0, sessionAmount = sessionsArray.length; sessionAnchor < sessionAmount; sessionAnchor++) {
-                for(var lapsAnchor = 0, lapsAmount = sessionsArray[sessionAnchor].length; lapsAnchor < lapsAmount; lapsAnchor++) {
-                    if(sessionsArray[sessionAnchor][lapsAnchor] === lapsArray[lapsArray.length - 1]) {
+            for(var sessionAnchor = 0, sessionAmount = sessions.sessionStorage.length; sessionAnchor < sessionAmount; sessionAnchor++) {
+                for(var lapsAnchor = 0, lapsAmount = sessions.sessionStorage[sessionAnchor].length; lapsAnchor < lapsAmount; lapsAnchor++) {
+                    if(sessions.sessionStorage[sessionAnchor][lapsAnchor] === lapsArray[lapsArray.length - 1]) {
                         return saveSessionActive = false;
                     }
                 }
             }
-            if(saveSessionActive === false) {
+            if(!saveSessionActive) {
                 saveSessionBtn.disabled = true;
             }
             saveSessionBtn.disabled = false;
@@ -133,8 +171,7 @@ window.onload = function() {
         if(actionParam === 'hide') {
             toolTip.style.visibility = 'hidden';
             popUpBlock.style.visibility = 'hidden';
-        }
-        else {
+        } else {
             popUpBlock.style.visibility = 'visible';
             if (localStorage.getItem('sessions') === null) {
                 toolTip.style.visibility = 'visible';
@@ -154,26 +191,6 @@ window.onload = function() {
         lapView.appendChild(lapsList);
     }
 
-    function showSessions (sessionArray) {
-        sessionList.innerHTML = '';
-        for(var sessionId = 0; sessionId < sessionArray.length; sessionId++) {
-            var runningSessionListItem = document.createElement('li');
-            runningSessionListItem.innerHTML = '<a href="#" class="sessionLink" data-session-index-="' + sessionId + '">' + 'show session-' + (sessionId + 1) +'</a><ul class="sessionBlock" id="sessionBlock-' + sessionId+ '"></ul>';
-            sessionList.appendChild(runningSessionListItem);
-        }
-        sessionsView.appendChild(sessionList);
-    }
-
-    function displayTargetSession (targetSession, currentTime) {
-        clearLapsList();
-        for(var lapsId = 0; lapsId < sessionsArray[targetSession].length; lapsId++) {
-            addLap(sessionsArray[targetSession][lapsId], lapsId);
-            lapsArray.push(sessionsArray[targetSession][lapsId]);
-        }
-        timer.setValue(+currentTime[0], +currentTime[1], +currentTime[2], +currentTime[3]);
-        timer.displayCurrValue();
-    }
-
     startBtn.onclick = function () {
         timer.toggleIsRunning();
     };
@@ -190,30 +207,12 @@ window.onload = function() {
     };
 
     saveSessionBtn.onclick = function () {
-        /**
-         * Here we create a copy of lapsArray
-         * than we create a loop to check if the last Lap
-         * of the target session is unique. If it is not we return
-         * from the function.
-         * otherwise we just push a newLapsArray with the newly
-         * created lap in the end of the sessionsArray
-         */
-        var newLapsArray = lapsArray.slice();
-        for(var sessionAnchor = 0, sessionAmount = sessionsArray.length; sessionAnchor < sessionAmount; sessionAnchor++) {
-            for(var lapsAnchor = 0, lapsAmount = sessionsArray[sessionAnchor].length; lapsAnchor < lapsAmount; lapsAnchor++) {
-                if(sessionsArray[sessionAnchor][lapsAnchor] === newLapsArray[newLapsArray.length - 1]) {
-                    return;
-                }
-            }
-        }
-        sessionsArray.push(newLapsArray);
-        localStorage.setItem('sessions', JSON.stringify(sessionsArray));
-        checkButtonsCondition();
+        sessions.save();
     };
 
     loadSessionBtn.onclick = function () {
         togglePopUp('show');
-        showSessions(sessionsArray);
+        sessions.showAll();
         checkButtonsCondition();
         timer.pause();
     };
@@ -223,12 +222,16 @@ window.onload = function() {
             if(startBtn.innerText === 'Pause') {
                 timer.start();
             }
+        } else if(e.target.getAttribute('class') === 'sessionLink'){
+            var sessionIndex = e.target.getAttribute('data-session-index-');
+            var frozenTime = sessions.sessionStorage[sessionIndex][(sessions.sessionStorage[sessionIndex].length - 1)].split(':');
+            sessions.showTarget(sessionIndex);
+            timer.setValue(+frozenTime[0], +frozenTime[1], +frozenTime[2], +frozenTime[3]);
+            timer.displayCurrValue();
+        } else {
+            return;
         }
-        else if(e.target.getAttribute('class') !== null && e.target.getAttribute('class') !== 'close'){
-            var targetMatchWithSessionNumber = e.target.getAttribute('data-session-index-');
-            var frozenTime = sessionsArray[targetMatchWithSessionNumber][(sessionsArray[targetMatchWithSessionNumber].length - 1)].split(':');
-            displayTargetSession(targetMatchWithSessionNumber, frozenTime);
-        }
+
         if(e.target.getAttribute('class') !== null) {
             togglePopUp('hide');
         }
