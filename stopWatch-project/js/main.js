@@ -19,7 +19,7 @@ window.onload = function() {
     var resetBtn = document.getElementById('reset');
     var saveSessionBtn = document.getElementById('saveSession');
     var loadSessionBtn = document.getElementById('loadSession');
-    var savedSessions = localStorage.getItem('sessions');
+    //var savedSessions = localStorage.getItem('sessions');
     var startingTime = '00:00:00:00';
     var lapsArray = [];
     var isTimerRunning;
@@ -92,48 +92,55 @@ window.onload = function() {
         }
 
     };
-    var sessions = {
-        sessionStorage: (localStorage.getItem('sessions')!== null) ? JSON.parse(savedSessions) : [],
-        showAll: function () {
-            sessionList.innerHTML = '';
-            for(var sessionId = 0; sessionId < this.sessionStorage.length; sessionId++) {
-                var runningSessionListItem = document.createElement('li');
-                runningSessionListItem.innerHTML = '<a href="#" class="sessionLink" data-session-index-="' + sessionId + '">' + 'show session-' + (sessionId + 1) +'</a><ul class="sessionBlock" id="sessionBlock-' + sessionId+ '"></ul>';
-                sessionList.appendChild(runningSessionListItem);
-            }
-            sessionsView.appendChild(sessionList);
-        },
 
-        showTarget: function (targetSession) {
-            clearLapsList();
-            for(var lapsId = 0; lapsId < this.sessionStorage[targetSession].length; lapsId++) {
-                addLap(this.sessionStorage[targetSession][lapsId], lapsId);
-                lapsArray.push(this.sessionStorage[targetSession][lapsId]);
-            }
-        },
+    var sessions = (function () {
+        var saved = localStorage.getItem('sessions');
+        var sessionStorage = (saved !== null) ? JSON.parse(saved) : [];
+        return {
+            saved: saved,
+            sessionStorage: sessionStorage,
+            showAll: function () {
+                sessionList.innerHTML = '';
+                for(var sessionId = 0; sessionId < this.sessionStorage.length; sessionId++) {
+                    var runningSessionListItem = document.createElement('li');
+                    runningSessionListItem.innerHTML = '<a href="#" class="sessionLink" data-session-index-="' + sessionId + '">' + 'show session-' + (sessionId + 1) +'</a><ul class="sessionBlock" id="sessionBlock-' + sessionId+ '"></ul>';
+                    sessionList.appendChild(runningSessionListItem);
+                }
+                sessionsView.appendChild(sessionList);
+            },
 
-        save: function() {
-            /**
-             * Here we create a copy of lapsArray
-             * than we create a loop to check if the last Lap
-             * of the target session is unique. If it is not we return
-             * from the function.
-             * otherwise we just push a newLapsArray with the newly
-             * created lap in the end of the sessionsArray
-             */
-            var newLapsArray = lapsArray.slice();
-            for(var sessionAnchor = 0, sessionAmount = this.sessionStorage.length; sessionAnchor < sessionAmount; sessionAnchor++) {
-                for(var lapsAnchor = 0, lapsAmount = this.sessionStorage[sessionAnchor].length; lapsAnchor < lapsAmount; lapsAnchor++) {
-                    if(this.sessionStorage[sessionAnchor][lapsAnchor] === newLapsArray[newLapsArray.length - 1]) {
-                        return;
+            showTarget: function (targetSession) {
+                clearLapsList();
+                for(var lapsId = 0; lapsId < this.sessionStorage[targetSession].length; lapsId++) {
+                    addLap(this.sessionStorage[targetSession][lapsId], lapsId);
+                    lapsArray.push(this.sessionStorage[targetSession][lapsId]);
+                }
+            },
+
+            save: function() {
+                /**
+                 * Here we create a copy of lapsArray
+                 * than we create a loop to check if the last Lap
+                 * of the target session is unique. If it is not we return
+                 * from the function.
+                 * otherwise we just push a newLapsArray with the newly
+                 * created lap in the end of the sessionsArray
+                 */
+                var newLapsArray = lapsArray.slice();
+                for(var sessionAnchor = 0, sessionAmount = this.sessionStorage.length; sessionAnchor < sessionAmount; sessionAnchor++) {
+                    for(var lapsAnchor = 0, lapsAmount = this.sessionStorage[sessionAnchor].length; lapsAnchor < lapsAmount; lapsAnchor++) {
+                        if(this.sessionStorage[sessionAnchor][lapsAnchor] === newLapsArray[newLapsArray.length - 1]) {
+                            return;
+                        }
                     }
                 }
+                this.sessionStorage.push(newLapsArray);
+                localStorage.setItem('sessions', JSON.stringify(this.sessionStorage));
+                checkButtonsCondition();
             }
-            this.sessionStorage.push(newLapsArray);
-            localStorage.setItem('sessions', JSON.stringify(this.sessionStorage));
-            checkButtonsCondition();
         }
-    };
+    })();
+
     function checkButtonsCondition (){
         resetBtn.disabled = true;
         saveLapsBtn.disabled = true;
