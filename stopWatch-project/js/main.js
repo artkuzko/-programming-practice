@@ -1,10 +1,6 @@
 /**
  * Created by akuzko on 10/9/2015.
  */
-function echo(anyData) {
-    return console.log(anyData);
-}
-
 window.onload = function() {
     var lapsList = document.createElement('ul'); //create UL for inserting and displaying Laps you've ran
     var sessionList = document.createElement('ul');//-- create UL tag for displaying the running sessions within it
@@ -19,7 +15,6 @@ window.onload = function() {
     var resetBtn = document.getElementById('reset');
     var saveSessionBtn = document.getElementById('saveSession');
     var loadSessionBtn = document.getElementById('loadSession');
-    //var savedSessions = localStorage.getItem('sessions');
     var startingTime = '00:00:00:00';
     var lapsArray = [];
     var isTimerRunning;
